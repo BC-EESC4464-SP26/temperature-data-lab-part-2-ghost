@@ -50,8 +50,9 @@ figure(1); clf
 worldmap('World')
 load coastlines
 plotm(coastlat,coastlon)
-scatterm(lat,lon,'m.','markersize',15)
-title('Locations of stations with observational temperature data')
+scatterm(lat,lon, 60, P_recent(:,1), "filled")
+colorbar
+title('Rate of Temperature Change by Station (1960-Now)')
 
 
 %% Extension option: again using scatterm, plot the difference between the
@@ -72,22 +73,45 @@ title('Locations of stations with observational temperature data')
 %each station
 % Initialize arrays to hold all the output from the for loop you will write
 % below
-%<--
+filename = ['model' num2str(station_number) '.csv']; % shortcut to get specific station so we only have to write the number and not the full name
+stationdata = readtable(filename); 
+baseline_model = NaN(length(sta), 2) % making array for baseline_model - average temperature/std deviatino across baseline period for each station
+P = NaN(length(sta), 2) % making array for  the slope and y-intercept of the
+                        % linear trendline for the modeled annual mean temperatures 
+                        % over the full period from 2006 to 2099.
+Anomaly = NaN(length(sta), length(stationdata.Year)) 
+
 
 % Write a for loop that will use the function StationModelProjections to
 % extract from the model projections for each station:
 % 1) the mean and standard deviation of the baseline period
 % (2006-2025) temperatures, 2) the annual mean temperature anomaly, and 3)
 % the slope and y-intercept of the linear trend over the 21st century
-%<--
+for i = 1:length(sta)
+    station_number = sta(1,i)
+    [baseline_model(i,:), P(i,:), Anomaly(i,:)] = StationModelProjections(station_number)
+end 
 
 %% 5. Plot a global map of the rate of temperature change projected at each station over the 21st century
-%<--
+figure(2); clf
+worldmap('World')
+load coastlines
+plotm(coastlat,coastlon)
+scatterm(lat,lon, 60, P(:,1), "filled") % reading the slope (1st column) of the linear trend line from our function
+colorbar
+title('Rate of Temperature Change by Station (21st Century)')
 
 %% 6a. Plot a global map of the interannual variability in annual mean temperature at each station
 %as determined by the baseline standard deviation of the temperatures from
 %2005 to 2025
-%<--
+figure(3); clf
+worldmap('World')
+load coastlines
+plotm(coastlat,coastlon)
+scatterm(lat,lon, 60, baseline_model(:,2), "filled") % reading the std dev (2nd column) of the linear trend line from our function
+colorbar
+title('Interannual Variability in Annual Mean Temp (2005-2025)')
+
 
 %% 6b-c. Calculate the time of emergence of the long-term change in temperature from local variability
 %There are many ways to make this calcuation, but here we will compare the
@@ -99,7 +123,8 @@ title('Locations of stations with observational temperature data')
 %projections, calculated as the time (beginning from 2006) when the linear
 %temperature trend will have reached 2x the standard deviation of the
 %temperatures from the baseline period
-%<--
-
+for i = 1:length(sta)
+find(An) == P(i, 1) > (2 .* baseline_model(i, 2))
+end
 %Plot a global map showing the year of emergence
 %<--

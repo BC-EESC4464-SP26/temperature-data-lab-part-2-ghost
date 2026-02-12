@@ -1,4 +1,4 @@
-function [baseline_model, P, anomaly] = StationModelProjections(station_number)
+function [baseline_model, P] = StationModelProjections(station_number)
 
 % StationModelProjections Analyze modeled future temperature projections at individual stations
 %===================================================================
@@ -32,10 +32,9 @@ function [baseline_model, P, anomaly] = StationModelProjections(station_number)
 
 %% Read and extract the data from your station from the csv file
 filename = ['model' num2str(station_number) '.csv'];
-stationdata = readtable(filename);
 %Extract the year and annual mean temperature data
-Year = stationdata.Year; 
-AnnualMeanTemperature = stationdata.AnnualMeanTemperature;
+Year = filename.Year
+AnnualMeanTemperature = filename.AnnualMeanTemperature
 
 %% Calculate the mean and standard deviation of the annual mean temperatures
 %  over the baseline period over the first 20 years of the modeled 21st
@@ -43,20 +42,19 @@ AnnualMeanTemperature = stationdata.AnnualMeanTemperature;
 %  provided above, you will want to combine these together into an array
 %  with both values called baseline_model
 baseline_model = NaN(1,2); % making the array 
-baseline = find(stationdata.Year >= 2006 & stationdata.Year <= 2025); %extracting baseline year rows
-mean_baseline = mean(stationdata.AnnualMeanTemperature(baseline)); % finding average of just the baseline years in mean temperature
-baseline_model(:, 1) = mean_baseline; % putting mean value into array 
-baseline_model(:, 2) = std(stationdata.AnnualMeanTemperature(baseline)); % putting stdev into array
+baseline = find(filename.Year >= 2006 & filename.Year <= 2025) %extracting baseline year rows
+mean_baseline = mean(filename.AnnualMeanTemperature(baseline)) % finding average of just the baseline years in mean temperature
+std_baseline = std(filename.AnnualMeanTemperature(baseline))
  %followed in Part 1 for a reminder of how you can do this)
 
 
 %% Calculate the 5-year moving mean smoothed annual mean temperature anomaly over the modeled period
 % Note that you could choose to provide these as an output if you want to
 % have these values available to plot.
- anomaly = stationdata.AnnualMeanTemperature - mean_baseline;  % difference between annual mean temperature and baseline = anomaly
- smooth = movemean(anomaly, 5); % movemen 5 years
+ anomaly = filename.AnnualMeanTemperature - mean_baseline 
+ smooth = movemean(anomaly, 5)
 
 %% Calculate the linear trend in temperature this station over the modeled 21st century period
- P = polyfit(stationdata.Year, anomaly, 1); % linear trend slope and intercept 
+ P = polyfit(filename.Year, anomaly, 1)
 
 end
