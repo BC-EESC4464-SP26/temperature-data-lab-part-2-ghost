@@ -123,8 +123,29 @@ title('Interannual Variability in Annual Mean Temp (2005-2025)')
 %projections, calculated as the time (beginning from 2006) when the linear
 %temperature trend will have reached 2x the standard deviation of the
 %temperatures from the baseline period
+
+%find(P(i,1) > (2 * baseline_model(i,2)))
+Emergence_year = NaN(length(sta), 1);
 for i = 1:length(sta)
-find(An) == P(i, 1) > (2 .* baseline_model(i, 2))
-end
+   for j = 2006:2099
+        temperature_change = ((P(i,1) * j) + P(i,2)); 
+        if (temperature_change > (2 * baseline_model(1,2)))
+            Emergence_year(i,1) = j;
+            break
+        end
+    end   
+end 
+
+
+%end
+%find() == P(i, 1) > (2 .* baseline_model(i, 2))
+% end
 %Plot a global map showing the year of emergence
-%<--
+figure(4); clf
+worldmap('World')
+load coastlines
+plotm(coastlat,coastlon)
+scatterm(lat,lon, 60, Emergence_year(:,1), "filled") % reading the std dev (2nd column) of the linear trend line from our function
+colorbar
+title('AHHHHHH')
+
