@@ -1,4 +1,4 @@
-function [baseline_model, P, anomaly] = StationModelProjections(station_number)
+function [baseline_model, P, anomaly, smooth] = StationModelProjections(station_number)
 
 % StationModelProjections Analyze modeled future temperature projections at individual stations
 %===================================================================
@@ -60,3 +60,4 @@ baseline_model(:, 2) = std(stationdata.AnnualMeanTemperature(baseline)); % putti
  P = polyfit(stationdata.Year, anomaly, 1); % linear trend slope and intercept 
 
 end
+

@@ -81,7 +81,7 @@ P = NaN(length(sta), 2) % making array for  the slope and y-intercept of the
                         % over the full period from 2006 to 2099.
 Anomaly = NaN(length(sta), length(stationdata.Year)) 
 
-
+Smooth = NaN(length(sta), length)
 % Write a for loop that will use the function StationModelProjections to
 % extract from the model projections for each station:
 % 1) the mean and standard deviation of the baseline period
@@ -89,7 +89,7 @@ Anomaly = NaN(length(sta), length(stationdata.Year))
 % the slope and y-intercept of the linear trend over the 21st century
 for i = 1:length(sta)
     station_number = sta(1,i)
-    [baseline_model(i,:), P(i,:), Anomaly(i,:)] = StationModelProjections(station_number)
+    [baseline_model(i,:), P(i,:), Anomaly(i,:), Smooth] = StationModelProjections(station_number)
 end 
 
 %% 5. Plot a global map of the rate of temperature change projected at each station over the 21st century
@@ -125,12 +125,13 @@ title('Interannual Variability in Annual Mean Temp (2005-2025)')
 %temperatures from the baseline period
 
 %find(P(i,1) > (2 * baseline_model(i,2)))
-Longterm_trend=Nan(length(sta))
+Emergence_year = NaN(length(sta), 1);
 for i = 1:length(sta)
+    station= sta(i);
    for j = 2006:2099
-temperature_change = ((P(i,1) * j) + P(i,2)); 
-        if (temperature_change > (2 * baseline_model(1,2)))
-            emergence_year = j
+        temperature_change = ((P(i,1) * j) + P(i,2)); 
+        if (temperature_change >= (baseline_model(i,2)* 2))
+            Emergence_year(i,1) = j;
             break
         end
     end   
@@ -141,4 +142,17 @@ end
 %find() == P(i, 1) > (2 .* baseline_model(i, 2))
 % end
 %Plot a global map showing the year of emergence
-%<--
+figure(4); clf
+worldmap('World')
+load coastlines
+plotm(coastlat,coastlon)
+scatterm(lat,lon, 90, Emergence_year(:,1), "filled") % reading the std dev (2nd column) of the linear trend line from our function
+colorbar
+title('Year of long-term temperature signal')
+
+
+
+
+%Now add a line with this smoothed data to the scatter plot
+plot(stationdata.Year, smooth, 'DisplayName', '5 Year Average') 
+
